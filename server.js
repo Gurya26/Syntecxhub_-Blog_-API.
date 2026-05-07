@@ -1,105 +1,138 @@
-require("dotenv").config();
-
 const express = require("express");
-
 const mongoose = require("mongoose");
-
 const cors = require("cors");
-
+const dotenv = require("dotenv");
+const multer = require("multer");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const path = require("path");
+
+dotenv.config();
 
 const app = express();
 
-const Post = require("./models/Post");
-
-/* ================= MIDDLEWARE ================= */
-
 app.use(cors());
-
 app.use(express.json());
+app.use(express.static("public"));
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-/* ================= FRONTEND ================= */
+const Post = require("./models/Post");
+const User = require("./models/User");
 
-app.get("/", (req, res) => {
 
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// ================= IMAGE UPLOAD =================
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + file.originalname);
+  }
 });
 
-/* ================= GET POSTS ================= */
+const upload = multer({ storage });
+
+
+// ================= LOGIN =================
+
+app.post("/register", async (req, res) => {
+  const { username, password } = req.body;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = new User({
+    username,
+    password: hashedPassword
+  });
+
+  await user.save();
+
+  res.json({ message: "User Registered" });
+});
+
+
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username });
+
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    return res.status(400).json({ message: "Wrong Password" });
+  }
+
+  const token = jwt.sign(
+    { id: user._id },
+    "SECRET_KEY"
+  );
+
+  res.json({
+    token,
+    username
+  });
+});
+
+
+// ================= BLOG ROUTES =================
 
 app.get("/posts", async (req, res) => {
-
-  const posts = await Post.find();
-
+  const posts = await Post.find().sort({ createdAt: -1 });
   res.json(posts);
-
 });
 
-/* ================= CREATE POST ================= */
 
-app.post("/posts", async (req, res) => {
+app.post("/posts", upload.single("image"), async (req, res) => {
 
-  const newPost = new Post(req.body);
+  const newPost = new Post({
+    title: req.body.title,
+    content: req.body.content,
+    image: req.file ? `/uploads/${req.file.filename}` : ""
+  });
 
   await newPost.save();
 
   res.json(newPost);
-
 });
 
-/* ================= UPDATE POST ================= */
 
 app.put("/posts/:id", async (req, res) => {
 
   const updatedPost = await Post.findByIdAndUpdate(
-
     req.params.id,
-
     req.body,
-
     { new: true }
-
   );
 
   res.json(updatedPost);
-
 });
 
-/* ================= DELETE POST ================= */
 
 app.delete("/posts/:id", async (req, res) => {
 
   await Post.findByIdAndDelete(req.params.id);
 
-  res.json({
-
-    message: "Blog deleted"
-
-  });
-
+  res.json({ message: "Deleted Successfully" });
 });
 
-/* ================= DATABASE ================= */
+
+// ================= DATABASE =================
 
 mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log("MongoDB Connected"))
+.catch(err => console.log(err));
 
-.then(() => {
 
-  console.log("MongoDB Connected");
+// ================= SERVER =================
 
-  app.listen(5000, () => {
+const PORT = process.env.PORT || 5000;
 
-    console.log("Server running on port 5000");
-
-  });
-
-})
-
-.catch((err) => {
-
-  console.log(err);
-
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

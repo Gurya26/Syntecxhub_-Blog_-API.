@@ -1,267 +1,216 @@
 const API_URL = "https://syntecxhub-blog-api-2.onrender.com";
 
 const blogForm = document.getElementById("blogForm");
-
-const titleInput = document.getElementById("title");
-
-const authorInput = document.getElementById("author");
-
-const contentInput = document.getElementById("content");
-
 const blogsContainer = document.getElementById("blogsContainer");
-
 const searchInput = document.getElementById("searchInput");
+const themeBtn = document.getElementById("themeBtn");
 
-const themeToggle = document.getElementById("themeToggle");
 
-const newestBtn = document.getElementById("newestBtn");
-
-const oldestBtn = document.getElementById("oldestBtn");
-
-let editingId = null;
-
-/* ================= LOAD BLOGS ================= */
+// ================= LOAD BLOGS =================
 
 async function loadBlogs() {
 
-  const response = await fetch(`${API_URL}/posts`);
+  blogsContainer.innerHTML = "<h2>Loading blogs...</h2>";
 
-  const blogs = await response.json();
+  const res = await fetch(`${API_URL}/posts`);
+
+  const blogs = await res.json();
 
   displayBlogs(blogs);
-
 }
 
-/* ================= DISPLAY BLOGS ================= */
+
+// ================= DISPLAY BLOGS =================
 
 function displayBlogs(blogs) {
 
   blogsContainer.innerHTML = "";
 
-  blogs.forEach(blog => {
-
-    const card = document.createElement("div");
-
-    card.classList.add("blog-card");
-
-    card.innerHTML = `
-
-      <h2>${blog.title}</h2>
-
-      <h4>✍️ ${blog.author || "Anonymous"}</h4>
-
-      <p>${blog.content}</p>
-
-      <div class="blog-buttons">
-
-        <button onclick="editBlog('${blog._id}')">
-          ✏️ Edit
-        </button>
-
-        <button onclick="deleteBlog('${blog._id}')">
-          🗑️ Delete
-        </button>
-
-      </div>
-
-    `;
-
-    blogsContainer.appendChild(card);
-
-  });
-
-}
-
-/* ================= ADD OR EDIT BLOG ================= */
-
-blogForm.addEventListener("submit", async (e) => {
-
-  e.preventDefault();
-
-  const title = titleInput.value;
-
-  const author = authorInput.value;
-
-  const content = contentInput.value;
-
-  if (!title || !author || !content) {
-
-    alert("Please fill all fields");
-
-    return;
-
-  }
-
-  if (editingId) {
-
-    await fetch(`${API_URL}/posts/${editingId}`, {
-
-      method: "PUT",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-        title,
-        author,
-        content
-      })
-
-    });
-
-    editingId = null;
-
-  } else {
-
-    await fetch(`${API_URL}/posts`, {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-        title,
-        author,
-        content
-      })
-
-    });
-
-  }
-
-  blogForm.reset();
-
-  loadBlogs();
-
-});
-
-/* ================= DELETE BLOG ================= */
-
-async function deleteBlog(id) {
-
-  await fetch(`${API_URL}/posts/${id}`, {
-
-    method: "DELETE"
-
-  });
-
-  loadBlogs();
-
-}
-
-/* ================= EDIT BLOG ================= */
-
-async function editBlog(id) {
-
-  const response = await fetch(`${API_URL}/posts`);
-
-  const blogs = await response.json();
-
-  const blog = blogs.find(blog => blog._id === id);
-
-  titleInput.value = blog.title;
-
-  authorInput.value = blog.author;
-
-  contentInput.value = blog.content;
-
-  editingId = id;
-
-}
-
-/* ================= SEARCH BLOG ================= */
-
-searchInput.addEventListener("input", async () => {
-
-  const response = await fetch(`${API_URL}/posts`);
-
-  const blogs = await response.json();
-
-  const filtered = blogs.filter(blog =>
-    blog.title.toLowerCase().includes(
-      searchInput.value.toLowerCase()
-    )
-  );
-
-  if (searchInput.value.trim() === "") {
-
-    displayBlogs(blogs);
-
-    return;
-
-  }
-
-  blogsContainer.innerHTML = "";
-
-  if (filtered.length === 0) {
-
+  if (blogs.length === 0) {
     blogsContainer.innerHTML = `
-
       <div class="blog-card">
-
-        <h2>❌ Blog Not Found</h2>
-
-        <p>No matching blog available.</p>
-
+        <h2>No Blogs Found 🚫</h2>
       </div>
-
     `;
+    return;
+  }
 
-  } else {
+  blogs.forEach(blog => {
 
     blogsContainer.innerHTML += `
 
       <div class="blog-card">
 
-        <h2>✅ Blog Found</h2>
+        <h2>${blog.title}</h2>
 
-        <p>Matching blogs are shown below.</p>
+        <p>${blog.content}</p>
+
+        <p>📅 ${new Date(blog.createdAt).toLocaleString()}</p>
+
+        ${blog.image ? `
+          <img src="${API_URL}${blog.image}">
+        ` : ""}
+
+        <div class="actions">
+
+          <button onclick="deleteBlog('${blog._id}')">
+            🗑️ Delete
+          </button>
+
+          <button onclick="editBlog('${blog._id}', '${blog.title}', '${blog.content}')">
+            ✏️ Edit
+          </button>
+
+        </div>
 
       </div>
-
     `;
+  });
+}
 
-    displayBlogs(filtered);
 
-  }
+// ================= ADD BLOG =================
 
+blogForm.addEventListener("submit", async (e) => {
+
+  e.preventDefault();
+
+  const formData = new FormData();
+
+  formData.append("title", document.getElementById("title").value);
+
+  formData.append("content", document.getElementById("content").value);
+
+  formData.append("image", document.getElementById("image").files[0]);
+
+  await fetch(`${API_URL}/posts`, {
+    method: "POST",
+    body: formData
+  });
+
+  blogForm.reset();
+
+  loadBlogs();
 });
 
-/* ================= THEME TOGGLE ================= */
 
-themeToggle.addEventListener("click", () => {
+// ================= DELETE =================
 
+async function deleteBlog(id) {
+
+  await fetch(`${API_URL}/posts/${id}`, {
+    method: "DELETE"
+  });
+
+  loadBlogs();
+}
+
+
+// ================= EDIT =================
+
+async function editBlog(id, oldTitle, oldContent) {
+
+  const newTitle = prompt("Edit Title", oldTitle);
+
+  const newContent = prompt("Edit Content", oldContent);
+
+  await fetch(`${API_URL}/posts/${id}`, {
+
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      title: newTitle,
+      content: newContent
+    })
+  });
+
+  loadBlogs();
+}
+
+
+// ================= SEARCH =================
+
+searchInput.addEventListener("input", async () => {
+
+  const searchText = searchInput.value.toLowerCase();
+
+  const res = await fetch(`${API_URL}/posts`);
+
+  const blogs = await res.json();
+
+  const filteredBlogs = blogs.filter(blog =>
+    blog.title.toLowerCase().includes(searchText)
+  );
+
+  displayBlogs(filteredBlogs);
+});
+
+
+// ================= THEME =================
+
+themeBtn.addEventListener("click", () => {
   document.body.classList.toggle("light-mode");
-
 });
 
-/* ================= SORTING ================= */
 
-newestBtn.addEventListener("click", async () => {
+// ================= REGISTER =================
 
-  const response = await fetch(`${API_URL}/posts`);
+async function register() {
 
-  const blogs = await response.json();
+  const username = document.getElementById("username").value;
 
-  blogs.reverse();
+  const password = document.getElementById("password").value;
 
-  displayBlogs(blogs);
+  await fetch(`${API_URL}/register`, {
 
-});
+    method: "POST",
 
-oldestBtn.addEventListener("click", async () => {
+    headers: {
+      "Content-Type": "application/json"
+    },
 
-  const response = await fetch(`${API_URL}/posts`);
+    body: JSON.stringify({
+      username,
+      password
+    })
+  });
 
-  const blogs = await response.json();
+  alert("Registered Successfully");
+}
 
-  displayBlogs(blogs);
 
-});
+// ================= LOGIN =================
 
-/* ================= INITIAL LOAD ================= */
+async function login() {
+
+  const username = document.getElementById("username").value;
+
+  const password = document.getElementById("password").value;
+
+  const res = await fetch(`${API_URL}/login`, {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      username,
+      password
+    })
+  });
+
+  const data = await res.json();
+
+  localStorage.setItem("token", data.token);
+
+  alert("Login Successful");
+}
+
 
 loadBlogs();
