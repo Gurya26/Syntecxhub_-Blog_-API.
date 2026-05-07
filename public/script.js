@@ -14,7 +14,7 @@ const themeToggle = document.getElementById("themeToggle");
 
 let editingId = null;
 
-/* LOAD BLOGS */
+/* ================= LOAD BLOGS ================= */
 
 async function loadBlogs() {
 
@@ -26,7 +26,7 @@ async function loadBlogs() {
 
 }
 
-/* DISPLAY BLOGS */
+/* ================= DISPLAY BLOGS ================= */
 
 function displayBlogs(blogs) {
 
@@ -39,6 +39,7 @@ function displayBlogs(blogs) {
     card.classList.add("blog-card");
 
     card.innerHTML = `
+
       <h2>${blog.title}</h2>
 
       <p>${blog.content}</p>
@@ -54,6 +55,7 @@ function displayBlogs(blogs) {
         </button>
 
       </div>
+
     `;
 
     blogsContainer.appendChild(card);
@@ -62,7 +64,7 @@ function displayBlogs(blogs) {
 
 }
 
-/* ADD OR EDIT BLOG */
+/* ================= ADD OR EDIT BLOG ================= */
 
 blogForm.addEventListener("submit", async (e) => {
 
@@ -71,6 +73,14 @@ blogForm.addEventListener("submit", async (e) => {
   const title = titleInput.value;
 
   const content = contentInput.value;
+
+  if (!title || !content) {
+
+    alert("Please fill all fields");
+
+    return;
+
+  }
 
   if (editingId) {
 
@@ -116,7 +126,7 @@ blogForm.addEventListener("submit", async (e) => {
 
 });
 
-/* DELETE BLOG */
+/* ================= DELETE BLOG ================= */
 
 async function deleteBlog(id) {
 
@@ -130,7 +140,7 @@ async function deleteBlog(id) {
 
 }
 
-/* EDIT BLOG */
+/* ================= EDIT BLOG ================= */
 
 async function editBlog(id) {
 
@@ -148,7 +158,7 @@ async function editBlog(id) {
 
 }
 
-/* SEARCH */
+/* ================= SEARCH BLOG ================= */
 
 searchInput.addEventListener("input", async () => {
 
@@ -162,11 +172,29 @@ searchInput.addEventListener("input", async () => {
     )
   );
 
-  displayBlogs(filtered);
+  if (filtered.length === 0) {
+
+    blogsContainer.innerHTML = `
+
+      <div class="blog-card">
+
+        <h2>❌ Blog Not Found</h2>
+
+        <p>No matching blog available.</p>
+
+      </div>
+
+    `;
+
+  } else {
+
+    displayBlogs(filtered);
+
+  }
 
 });
 
-/* THEME */
+/* ================= THEME TOGGLE ================= */
 
 themeToggle.addEventListener("click", () => {
 
@@ -174,6 +202,6 @@ themeToggle.addEventListener("click", () => {
 
 });
 
-/* START */
+/* ================= INITIAL LOAD ================= */
 
 loadBlogs();
