@@ -90,11 +90,12 @@ app.get("/posts", async (req, res) => {
 
 app.post("/posts", upload.single("image"), async (req, res) => {
 
-  const newPost = new Post({
-    title: req.body.title,
-    content: req.body.content,
-    image: req.file ? `/uploads/${req.file.filename}` : ""
-  });
+const newPost = new Post({
+  title: req.body.title,
+  author: req.body.author,
+  content: req.body.content,
+  image: req.file ? `/uploads/${req.file.filename}` : ""
+});
 
   await newPost.save();
 
