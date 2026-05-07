@@ -32,12 +32,42 @@ cb(null, Date.now() + path.extname(file.originalname));
 
 const upload = multer({ storage });
 
+/* GET BLOGS WITH PAGINATION + SORTING */
+
 app.get("/api/posts", async (req, res) => {
-const posts = await Post.find().sort({ createdAt: -1 });
+
+const page = parseInt(req.query.page) || 1;
+const limit = 3;
+
+const skip = (page - 1) * limit;
+
+const sortOrder = req.query.sort === "oldest"
+? 1
+: -1;
+
+const posts = await Post.find()
+.sort({ createdAt: sortOrder })
+.skip(skip)
+.limit(limit);
+
 res.json(posts);
+
 });
 
+/* GET SINGLE BLOG BY ID */
+
+app.get("/api/posts/:id", async (req, res) => {
+
+const post = await Post.findById(req.params.id);
+
+res.json(post);
+
+});
+
+/* CREATE BLOG */
+
 app.post("/api/posts", upload.single("image"), async (req, res) => {
+
 const newPost = new Post({
 title: req.body.title,
 author: req.body.author,
@@ -48,9 +78,13 @@ image: req.file ? `/uploads/${req.file.filename}` : "",
 await newPost.save();
 
 res.json(newPost);
+
 });
 
+/* EDIT BLOG */
+
 app.put("/api/posts/:id", async (req, res) => {
+
 const updatedPost = await Post.findByIdAndUpdate(
 req.params.id,
 req.body,
@@ -58,12 +92,17 @@ req.body,
 );
 
 res.json(updatedPost);
+
 });
 
+/* DELETE BLOG */
+
 app.delete("/api/posts/:id", async (req, res) => {
+
 await Post.findByIdAndDelete(req.params.id);
 
 res.json({ message: "Blog deleted" });
+
 });
 
 const PORT = process.env.PORT || 5000;

@@ -2,12 +2,14 @@
 <html lang="en">
 
 <head>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <title>SyntecxHub Blog Platform</title>
 
 <link rel="stylesheet" href="style.css" />
+
 </head>
 
 <body>
@@ -24,7 +26,21 @@ id="search"
 placeholder="🔍 Search blogs..."
 />
 
-<button id="themeBtn">🌙 Theme</button>
+<select id="sortSelect">
+
+<option value="newest">
+Newest First
+</option>
+
+<option value="oldest">
+Oldest First
+</option>
+
+</select>
+
+<button id="themeBtn">
+🌙 Theme
+</button>
 
 </div>
 
@@ -52,13 +68,27 @@ required
 
 <input type="file" id="image" />
 
-<button type="submit">Publish Blog</button>
+<button type="submit">
+Publish Blog
+</button>
 
 </form>
 
 <p id="message"></p>
 
 <div id="blogs"></div>
+
+<div class="pagination">
+
+<button id="prevBtn">
+⬅ Previous
+</button>
+
+<button id="nextBtn">
+Next ➡
+</button>
+
+</div>
 
 <footer>
 Made with ❤️ by Anam | SyntecxHub Internship Project
