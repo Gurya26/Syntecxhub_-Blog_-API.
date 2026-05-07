@@ -3,13 +3,13 @@
 
 <head>
 
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>My Blog Website</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 
 </head>
 
@@ -17,25 +17,19 @@
 
   <div class="container">
 
-    <h1>🚀 My Blog Website</h1>
+    <div class="top-bar">
 
-    <!-- SEARCH + THEME -->
+      <h1>🚀 My Blog Website</h1>
 
-    <div id="topBar">
-
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="🔍 Search blogs..."
-      >
-
-      <button id="themeBtn" onclick="toggleTheme()">
-        🌙 Theme
-      </button>
+      <button id="themeToggle">🌙 Theme</button>
 
     </div>
 
-    <!-- BLOG FORM -->
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="🔍 Search blogs..."
+    />
 
     <form id="blogForm">
 
@@ -44,7 +38,7 @@
         id="title"
         placeholder="Enter blog title"
         required
-      >
+      />
 
       <textarea
         id="content"
@@ -58,9 +52,11 @@
 
     </form>
 
-    <!-- POSTS -->
+    <h2 class="published-heading">
+      📚 Published Blogs
+    </h2>
 
-    <div id="postsContainer"></div>
+    <div id="blogsContainer"></div>
 
   </div>
 

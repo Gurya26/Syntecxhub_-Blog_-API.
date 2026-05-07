@@ -1,14 +1,20 @@
 const API_URL = "https://syntecxhub-blog-api-2.onrender.com";
 
 const blogForm = document.getElementById("blogForm");
+
 const titleInput = document.getElementById("title");
+
 const contentInput = document.getElementById("content");
+
 const blogsContainer = document.getElementById("blogsContainer");
+
 const searchInput = document.getElementById("searchInput");
+
 const themeToggle = document.getElementById("themeToggle");
 
-let editingBlogId = null;
+let editingId = null;
 
+/* LOAD BLOGS */
 
 async function loadBlogs() {
 
@@ -20,35 +26,43 @@ async function loadBlogs() {
 
 }
 
-
+/* DISPLAY BLOGS */
 
 function displayBlogs(blogs) {
 
   blogsContainer.innerHTML = "";
 
-  blogs.reverse().forEach(blog => {
+  blogs.forEach(blog => {
 
-    const blogCard = document.createElement("div");
+    const card = document.createElement("div");
 
-    blogCard.classList.add("blog-card");
+    card.classList.add("blog-card");
 
-    blogCard.innerHTML = `
+    card.innerHTML = `
       <h2>${blog.title}</h2>
+
       <p>${blog.content}</p>
 
       <div class="blog-buttons">
-        <button onclick="editBlog('${blog._id}')">✏️ Edit</button>
-        <button onclick="deleteBlog('${blog._id}')">🗑️ Delete</button>
+
+        <button onclick="editBlog('${blog._id}')">
+          ✏️ Edit
+        </button>
+
+        <button onclick="deleteBlog('${blog._id}')">
+          🗑️ Delete
+        </button>
+
       </div>
     `;
 
-    blogsContainer.appendChild(blogCard);
+    blogsContainer.appendChild(card);
 
   });
 
 }
 
-
+/* ADD OR EDIT BLOG */
 
 blogForm.addEventListener("submit", async (e) => {
 
@@ -58,37 +72,40 @@ blogForm.addEventListener("submit", async (e) => {
 
   const content = contentInput.value;
 
-  if (!title || !content) {
-    alert("Please fill all fields");
-    return;
-  }
+  if (editingId) {
 
-  if (editingBlogId) {
+    await fetch(`${API_URL}/posts/${editingId}`, {
 
-    await fetch(`${API_URL}/posts/${editingBlogId}`, {
       method: "PUT",
+
       headers: {
         "Content-Type": "application/json"
       },
+
       body: JSON.stringify({
         title,
         content
       })
+
     });
 
-    editingBlogId = null;
+    editingId = null;
 
   } else {
 
     await fetch(`${API_URL}/posts`, {
+
       method: "POST",
+
       headers: {
         "Content-Type": "application/json"
       },
+
       body: JSON.stringify({
         title,
         content
       })
+
     });
 
   }
@@ -99,19 +116,21 @@ blogForm.addEventListener("submit", async (e) => {
 
 });
 
-
+/* DELETE BLOG */
 
 async function deleteBlog(id) {
 
   await fetch(`${API_URL}/posts/${id}`, {
+
     method: "DELETE"
+
   });
 
   loadBlogs();
 
 }
 
-
+/* EDIT BLOG */
 
 async function editBlog(id) {
 
@@ -119,17 +138,17 @@ async function editBlog(id) {
 
   const blogs = await response.json();
 
-  const blog = blogs.find(item => item._id === id);
+  const blog = blogs.find(blog => blog._id === id);
 
   titleInput.value = blog.title;
 
   contentInput.value = blog.content;
 
-  editingBlogId = id;
+  editingId = id;
 
 }
 
-
+/* SEARCH */
 
 searchInput.addEventListener("input", async () => {
 
@@ -137,15 +156,17 @@ searchInput.addEventListener("input", async () => {
 
   const blogs = await response.json();
 
-  const filteredBlogs = blogs.filter(blog =>
-    blog.title.toLowerCase().includes(searchInput.value.toLowerCase())
+  const filtered = blogs.filter(blog =>
+    blog.title.toLowerCase().includes(
+      searchInput.value.toLowerCase()
+    )
   );
 
-  displayBlogs(filteredBlogs);
+  displayBlogs(filtered);
 
 });
 
-
+/* THEME */
 
 themeToggle.addEventListener("click", () => {
 
@@ -153,6 +174,6 @@ themeToggle.addEventListener("click", () => {
 
 });
 
-
+/* START */
 
 loadBlogs();
