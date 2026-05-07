@@ -1,0 +1,184 @@
+body {
+
+  margin: 0;
+
+  padding: 0;
+
+  background: #081229;
+
+  color: white;
+
+  font-family: Arial, sans-serif;
+
+}
+
+.container {
+
+  width: 80%;
+
+  margin: auto;
+
+  padding: 30px;
+
+}
+
+h1 {
+
+  text-align: center;
+
+  color: #38bdf8;
+
+  margin-bottom: 40px;
+
+}
+
+#topBar {
+
+  display: flex;
+
+  gap: 15px;
+
+  margin-bottom: 25px;
+
+}
+
+#searchInput {
+
+  flex: 1;
+
+  padding: 15px;
+
+  border-radius: 10px;
+
+  border: none;
+
+  font-size: 16px;
+
+}
+
+#themeBtn {
+
+  padding: 15px 20px;
+
+}
+
+form {
+
+  background: #1e293b;
+
+  padding: 25px;
+
+  border-radius: 15px;
+
+  margin-bottom: 40px;
+
+}
+
+input,
+textarea {
+
+  width: 100%;
+
+  padding: 15px;
+
+  margin-bottom: 20px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  font-size: 16px;
+
+}
+
+textarea {
+
+  height: 150px;
+
+  resize: none;
+
+}
+
+button {
+
+  background: #38bdf8;
+
+  color: white;
+
+  border: none;
+
+  padding: 12px 20px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+}
+
+button:hover {
+
+  opacity: 0.9;
+
+}
+
+.post {
+
+  background: #1e293b;
+
+  padding: 25px;
+
+  border-radius: 15px;
+
+  margin-bottom: 25px;
+
+}
+
+.post h2 {
+
+  color: #38bdf8;
+
+}
+
+.btnGroup {
+
+  margin-top: 20px;
+
+}
+
+.btnGroup button {
+
+  margin-right: 10px;
+
+}
+
+/* LIGHT MODE */
+
+.lightMode {
+
+  background: #f4f4f4;
+
+  color: black;
+
+}
+
+.lightMode .container {
+
+  color: black;
+
+}
+
+.lightMode form {
+
+  background: white;
+
+}
+
+.lightMode .post {
+
+  background: white;
+
+  color: black;
+
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>My Blog Website</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>🚀 My Blog Website</h1>
+
+    <!-- SEARCH + THEME -->
+
+    <div id="topBar">
+
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 Search blogs..."
+      >
+
+      <button id="themeBtn" onclick="toggleTheme()">
+        🌙 Theme
+      </button>
+
+    </div>
+
+    <!-- BLOG FORM -->
+
+    <form id="blogForm">
+
+      <input
+        type="text"
+        id="title"
+        placeholder="Enter blog title"
+        required
+      >
+
+      <textarea
+        id="content"
+        placeholder="Write your blog content"
+        required
+      ></textarea>
+
+      <button type="submit">
+        Publish Blog
+      </button>
+
+    </form>
+
+    <!-- POSTS -->
+
+    <div id="postsContainer"></div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
