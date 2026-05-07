@@ -172,6 +172,16 @@ searchInput.addEventListener("input", async () => {
     )
   );
 
+  if (searchInput.value.trim() === "") {
+
+    displayBlogs(blogs);
+
+    return;
+
+  }
+
+  blogsContainer.innerHTML = "";
+
   if (filtered.length === 0) {
 
     blogsContainer.innerHTML = `
@@ -188,7 +198,47 @@ searchInput.addEventListener("input", async () => {
 
   } else {
 
-    displayBlogs(filtered);
+    blogsContainer.innerHTML += `
+
+      <div class="blog-card">
+
+        <h2>✅ Blog Found</h2>
+
+        <p>Matching blogs are shown below.</p>
+
+      </div>
+
+    `;
+
+    filtered.forEach(blog => {
+
+      const card = document.createElement("div");
+
+      card.classList.add("blog-card");
+
+      card.innerHTML = `
+
+        <h2>${blog.title}</h2>
+
+        <p>${blog.content}</p>
+
+        <div class="blog-buttons">
+
+          <button onclick="editBlog('${blog._id}')">
+            ✏️ Edit
+          </button>
+
+          <button onclick="deleteBlog('${blog._id}')">
+            🗑️ Delete
+          </button>
+
+        </div>
+
+      `;
+
+      blogsContainer.appendChild(card);
+
+    });
 
   }
 
