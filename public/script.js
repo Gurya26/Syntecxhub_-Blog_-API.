@@ -1,64 +1,48 @@
-const API_URL = "http://localhost:5000/posts";
+const API_URL = "https://syntecxhub-blog-api-2.onrender.com";
 
-const form = document.getElementById("blogForm");
-
-const postsContainer = document.getElementById("postsContainer");
-
+const blogForm = document.getElementById("blogForm");
+const titleInput = document.getElementById("title");
+const contentInput = document.getElementById("content");
+const blogsContainer = document.getElementById("blogsContainer");
 const searchInput = document.getElementById("searchInput");
+const themeToggle = document.getElementById("themeToggle");
 
-let allPosts = [];
+let editingBlogId = null;
 
 
+async function loadBlogs() {
 
-async function loadPosts() {
+  const response = await fetch(`${API_URL}/posts`);
 
-  const response = await fetch(API_URL);
+  const blogs = await response.json();
 
-  const posts = await response.json();
-
-  allPosts = posts;
-
-  displayPosts(posts);
+  displayBlogs(blogs);
 
 }
 
 
 
-function displayPosts(posts) {
+function displayBlogs(blogs) {
 
-  postsContainer.innerHTML = "";
+  blogsContainer.innerHTML = "";
 
-  posts.forEach(post => {
+  blogs.reverse().forEach(blog => {
 
-    const postCard = document.createElement("div");
+    const blogCard = document.createElement("div");
 
-    postCard.classList.add("post");
+    blogCard.classList.add("blog-card");
 
-    postCard.innerHTML = `
+    blogCard.innerHTML = `
+      <h2>${blog.title}</h2>
+      <p>${blog.content}</p>
 
-      <h2>${post.title}</h2>
-
-      <p>${post.content}</p>
-
-      <div class="btnGroup">
-
-        <button onclick="deletePost('${post._id}')">
-          🗑️ Delete
-        </button>
-
-        <button onclick="editPost(
-          '${post._id}',
-          '${post.title}',
-          '${post.content}'
-        )">
-          ✏️ Edit
-        </button>
-
+      <div class="blog-buttons">
+        <button onclick="editBlog('${blog._id}')">✏️ Edit</button>
+        <button onclick="deleteBlog('${blog._id}')">🗑️ Delete</button>
       </div>
-
     `;
 
-    postsContainer.appendChild(postCard);
+    blogsContainer.appendChild(blogCard);
 
   });
 
@@ -66,105 +50,109 @@ function displayPosts(posts) {
 
 
 
-form.addEventListener("submit", async (e) => {
+blogForm.addEventListener("submit", async (e) => {
 
   e.preventDefault();
 
-  const title = document.getElementById("title").value;
+  const title = titleInput.value;
 
-  const content = document.getElementById("content").value;
+  const content = contentInput.value;
 
-  await fetch(API_URL, {
+  if (!title || !content) {
+    alert("Please fill all fields");
+    return;
+  }
 
-    method: "POST",
+  if (editingBlogId) {
 
-    headers: {
-      "Content-Type": "application/json"
-    },
+    await fetch(`${API_URL}/posts/${editingBlogId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title,
+        content
+      })
+    });
 
-    body: JSON.stringify({
-      title,
-      content
-    })
+    editingBlogId = null;
 
-  });
+  } else {
 
-  form.reset();
+    await fetch(`${API_URL}/posts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title,
+        content
+      })
+    });
 
-  loadPosts();
+  }
+
+  blogForm.reset();
+
+  loadBlogs();
 
 });
 
 
 
-async function deletePost(id) {
+async function deleteBlog(id) {
 
-  await fetch(`${API_URL}/${id}`, {
-
+  await fetch(`${API_URL}/posts/${id}`, {
     method: "DELETE"
-
   });
 
-  loadPosts();
+  loadBlogs();
 
 }
 
 
 
-async function editPost(id, oldTitle, oldContent) {
+async function editBlog(id) {
 
-  const newTitle = prompt("Edit title:", oldTitle);
+  const response = await fetch(`${API_URL}/posts`);
 
-  const newContent = prompt("Edit content:", oldContent);
+  const blogs = await response.json();
 
-  if (!newTitle || !newContent) return;
+  const blog = blogs.find(item => item._id === id);
 
-  await fetch(`${API_URL}/${id}`, {
+  titleInput.value = blog.title;
 
-    method: "PUT",
+  contentInput.value = blog.content;
 
-    headers: {
-      "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-
-      title: newTitle,
-
-      content: newContent
-
-    })
-
-  });
-
-  loadPosts();
+  editingBlogId = id;
 
 }
 
 
 
-searchInput.addEventListener("input", () => {
+searchInput.addEventListener("input", async () => {
 
-  const value = searchInput.value.toLowerCase();
+  const response = await fetch(`${API_URL}/posts`);
 
-  const filteredPosts = allPosts.filter(post =>
+  const blogs = await response.json();
 
-    post.title.toLowerCase().includes(value)
-
+  const filteredBlogs = blogs.filter(blog =>
+    blog.title.toLowerCase().includes(searchInput.value.toLowerCase())
   );
 
-  displayPosts(filteredPosts);
+  displayBlogs(filteredBlogs);
 
 });
 
 
 
-function toggleTheme() {
+themeToggle.addEventListener("click", () => {
 
-  document.body.classList.toggle("lightMode");
+  document.body.classList.toggle("light-mode");
 
-}
+});
 
 
 
-loadPosts();
+loadBlogs();
