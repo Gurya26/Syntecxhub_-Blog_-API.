@@ -1,241 +1,143 @@
-const API_URL = "https://syntecxhub-blog-api-2.onrender.com";
+const API_URL = "https://syntecxhub-blog-api-2.onrender.com/api/posts";
 
+const blogForm = document.getElementById("blogForm");
+const blogsContainer = document.getElementById("blogs");
+const searchInput = document.getElementById("search");
+const message = document.getElementById("message");
 
-// ================= REGISTER =================
+let blogs = [];
 
-async function register() {
+async function fetchBlogs() {
 
-  const username = document.getElementById("username").value;
+message.innerText = "Loading blogs...";
 
-  const password = document.getElementById("password").value;
+const res = await fetch(API_URL);
 
-  await fetch(`${API_URL}/register`, {
+blogs = await res.json();
 
-    method: "POST",
+displayBlogs(blogs);
 
-    headers: {
-      "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-      username,
-      password
-    })
-  });
-
-  alert("Registered Successfully ✅");
 }
 
+function displayBlogs(data) {
 
-// ================= LOGIN =================
+blogsContainer.innerHTML = "";
 
-async function login() {
-
-  const username = document.getElementById("username").value;
-
-  const password = document.getElementById("password").value;
-
-  const res = await fetch(`${API_URL}/login`, {
-
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-      username,
-      password
-    })
-  });
-
-  const data = await res.json();
-
-  if (data.token) {
-
-    localStorage.setItem("token", data.token);
-
-    window.location.href = "dashboard.html";
-
-  } else {
-
-    alert("Login Failed ❌");
-  }
+if (data.length === 0) {
+blogsContainer.innerHTML = "<h2>No Blogs Found 🚫</h2>";
+return;
 }
 
+data.forEach((blog) => {
 
-// ================= DASHBOARD =================
+blogsContainer.innerHTML += `
+<div class="blog-card">
 
-if (window.location.pathname.includes("dashboard.html")) {
+${blog.image ? `<img src="https://syntecxhub-blog-api-2.onrender.com${blog.image}" />` : ""}
 
-  const blogForm = document.getElementById("blogForm");
+<h2>${blog.title}</h2>
 
-  const blogsContainer = document.getElementById("blogsContainer");
+<p><strong>Author:</strong> ${blog.author}</p>
 
-  const searchInput = document.getElementById("searchInput");
+<p>${blog.content}</p>
 
-  const themeBtn = document.getElementById("themeBtn");
+<p><strong>Date:</strong>
+${new Date(blog.createdAt).toLocaleString()}
+</p>
 
+<div class="actions">
 
-  // LOAD BLOGS
+<button onclick="editBlog('${blog._id}')">
+✏️ Edit
+</button>
 
-  async function loadBlogs() {
+<button onclick="deleteBlog('${blog._id}')">
+🗑️ Delete
+</button>
 
-    blogsContainer.innerHTML = "<h2>Loading blogs...</h2>";
+</div>
 
-    const res = await fetch(`${API_URL}/posts`);
+</div>
+`;
+});
 
-    const blogs = await res.json();
+message.innerText = "";
 
-    displayBlogs(blogs);
-  }
-
-
-  // DISPLAY BLOGS
-
-  function displayBlogs(blogs) {
-
-    blogsContainer.innerHTML = "";
-
-    if (blogs.length === 0) {
-
-      blogsContainer.innerHTML = `
-        <div class="blog-card">
-          <h2>No Blogs Found 🚫</h2>
-        </div>
-      `;
-
-      return;
-    }
-
-    blogs.forEach(blog => {
-
-      blogsContainer.innerHTML += `
-
-        <div class="blog-card">
-
-          <h2>${blog.title}</h2>
-
-          <p><strong>✍️ Author:</strong> ${blog.author}</p>
-
-          <p>${blog.content}</p>
-
-          <p>📅 ${new Date(blog.createdAt).toLocaleString()}</p>
-
-          ${blog.image ? `
-            <img src="${API_URL}${blog.image}">
-          ` : ""}
-
-          <div class="actions">
-
-            <button onclick="deleteBlog('${blog._id}')">
-              🗑️ Delete
-            </button>
-
-            <button onclick="editBlog('${blog._id}', '${blog.title}', '${blog.content}')">
-              ✏️ Edit
-            </button>
-
-          </div>
-
-        </div>
-      `;
-    });
-  }
-
-
-  // ADD BLOG
-
-  blogForm.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    const formData = new FormData();
-
-    formData.append("title", document.getElementById("title").value);
-
-    formData.append("author", document.getElementById("author").value);
-
-    formData.append("content", document.getElementById("content").value);
-
-    formData.append("image", document.getElementById("image").files[0]);
-
-    await fetch(`${API_URL}/posts`, {
-
-      method: "POST",
-
-      body: formData
-    });
-
-    blogForm.reset();
-
-    loadBlogs();
-  });
-
-
-  // DELETE
-
-  window.deleteBlog = async function(id) {
-
-    await fetch(`${API_URL}/posts/${id}`, {
-      method: "DELETE"
-    });
-
-    loadBlogs();
-  }
-
-
-  // EDIT
-
-  window.editBlog = async function(id, oldTitle, oldContent) {
-
-    const newTitle = prompt("Edit Title", oldTitle);
-
-    const newContent = prompt("Edit Content", oldContent);
-
-    await fetch(`${API_URL}/posts/${id}`, {
-
-      method: "PUT",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-        title: newTitle,
-        content: newContent
-      })
-    });
-
-    loadBlogs();
-  }
-
-
-  // SEARCH
-
-  searchInput.addEventListener("input", async () => {
-
-    const searchText = searchInput.value.toLowerCase();
-
-    const res = await fetch(`${API_URL}/posts`);
-
-    const blogs = await res.json();
-
-    const filteredBlogs = blogs.filter(blog =>
-      blog.title.toLowerCase().includes(searchText)
-    );
-
-    displayBlogs(filteredBlogs);
-  });
-
-
-  // THEME
-
-  themeBtn.addEventListener("click", () => {
-
-    document.body.classList.toggle("light-mode");
-
-  });
-
-  loadBlogs();
 }
+
+blogForm.addEventListener("submit", async (e) => {
+
+e.preventDefault();
+
+const formData = new FormData();
+
+formData.append("title", document.getElementById("title").value);
+
+formData.append("author", document.getElementById("author").value);
+
+formData.append("content", document.getElementById("content").value);
+
+formData.append("image", document.getElementById("image").files[0]);
+
+await fetch(API_URL, {
+method: "POST",
+body: formData,
+});
+
+blogForm.reset();
+
+fetchBlogs();
+
+});
+
+async function deleteBlog(id) {
+
+await fetch(`${API_URL}/${id}`, {
+method: "DELETE",
+});
+
+fetchBlogs();
+
+}
+
+async function editBlog(id) {
+
+const newTitle = prompt("Enter new blog title");
+
+const newContent = prompt("Enter new blog content");
+
+const newAuthor = prompt("Enter author name");
+
+await fetch(`${API_URL}/${id}`, {
+method: "PUT",
+headers: {
+"Content-Type": "application/json",
+},
+body: JSON.stringify({
+title: newTitle,
+content: newContent,
+author: newAuthor,
+}),
+});
+
+fetchBlogs();
+
+}
+
+searchInput.addEventListener("input", () => {
+
+const value = searchInput.value.toLowerCase();
+
+const filteredBlogs = blogs.filter((blog) =>
+blog.title.toLowerCase().includes(value)
+);
+
+displayBlogs(filteredBlogs);
+
+});
+
+document.getElementById("themeBtn").addEventListener("click", () => {
+document.body.classList.toggle("light-mode");
+});
+
+fetchBlogs();
