@@ -4,6 +4,8 @@ const blogForm = document.getElementById("blogForm");
 
 const titleInput = document.getElementById("title");
 
+const authorInput = document.getElementById("author");
+
 const contentInput = document.getElementById("content");
 
 const blogsContainer = document.getElementById("blogsContainer");
@@ -11,6 +13,10 @@ const blogsContainer = document.getElementById("blogsContainer");
 const searchInput = document.getElementById("searchInput");
 
 const themeToggle = document.getElementById("themeToggle");
+
+const newestBtn = document.getElementById("newestBtn");
+
+const oldestBtn = document.getElementById("oldestBtn");
 
 let editingId = null;
 
@@ -42,6 +48,8 @@ function displayBlogs(blogs) {
 
       <h2>${blog.title}</h2>
 
+      <h4>✍️ ${blog.author || "Anonymous"}</h4>
+
       <p>${blog.content}</p>
 
       <div class="blog-buttons">
@@ -72,9 +80,11 @@ blogForm.addEventListener("submit", async (e) => {
 
   const title = titleInput.value;
 
+  const author = authorInput.value;
+
   const content = contentInput.value;
 
-  if (!title || !content) {
+  if (!title || !author || !content) {
 
     alert("Please fill all fields");
 
@@ -94,6 +104,7 @@ blogForm.addEventListener("submit", async (e) => {
 
       body: JSON.stringify({
         title,
+        author,
         content
       })
 
@@ -113,6 +124,7 @@ blogForm.addEventListener("submit", async (e) => {
 
       body: JSON.stringify({
         title,
+        author,
         content
       })
 
@@ -151,6 +163,8 @@ async function editBlog(id) {
   const blog = blogs.find(blog => blog._id === id);
 
   titleInput.value = blog.title;
+
+  authorInput.value = blog.author;
 
   contentInput.value = blog.content;
 
@@ -210,35 +224,7 @@ searchInput.addEventListener("input", async () => {
 
     `;
 
-    filtered.forEach(blog => {
-
-      const card = document.createElement("div");
-
-      card.classList.add("blog-card");
-
-      card.innerHTML = `
-
-        <h2>${blog.title}</h2>
-
-        <p>${blog.content}</p>
-
-        <div class="blog-buttons">
-
-          <button onclick="editBlog('${blog._id}')">
-            ✏️ Edit
-          </button>
-
-          <button onclick="deleteBlog('${blog._id}')">
-            🗑️ Delete
-          </button>
-
-        </div>
-
-      `;
-
-      blogsContainer.appendChild(card);
-
-    });
+    displayBlogs(filtered);
 
   }
 
@@ -249,6 +235,30 @@ searchInput.addEventListener("input", async () => {
 themeToggle.addEventListener("click", () => {
 
   document.body.classList.toggle("light-mode");
+
+});
+
+/* ================= SORTING ================= */
+
+newestBtn.addEventListener("click", async () => {
+
+  const response = await fetch(`${API_URL}/posts`);
+
+  const blogs = await response.json();
+
+  blogs.reverse();
+
+  displayBlogs(blogs);
+
+});
+
+oldestBtn.addEventListener("click", async () => {
+
+  const response = await fetch(`${API_URL}/posts`);
+
+  const blogs = await response.json();
+
+  displayBlogs(blogs);
 
 });
 

@@ -1,120 +1,84 @@
 require("dotenv").config();
 
 const express = require("express");
+
 const mongoose = require("mongoose");
+
 const cors = require("cors");
+
 const path = require("path");
 
 const app = express();
 
-app.use(express.json());
-app.use(cors());
-
 const Post = require("./models/Post");
 
-/* ================= FRONTEND ================= */
+/* ================= MIDDLEWARE ================= */
+
+app.use(cors());
+
+app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "public")));
 
+/* ================= FRONTEND ================= */
+
 app.get("/", (req, res) => {
+
   res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-/* ================= CREATE BLOG ================= */
-
-app.post("/posts", async (req, res) => {
-
-  try {
-
-    const newPost = new Post({
-      title: req.body.title,
-      content: req.body.content
-    });
-
-    await newPost.save();
-
-    res.json(newPost);
-
-  } catch (err) {
-
-    res.status(500).json({
-      error: err.message
-    });
-
-  }
 
 });
 
-/* ================= GET BLOGS ================= */
+/* ================= GET POSTS ================= */
 
 app.get("/posts", async (req, res) => {
 
-  try {
+  const posts = await Post.find();
 
-    const posts = await Post.find().sort({
-      createdAt: -1
-    });
-
-    res.json(posts);
-
-  } catch (err) {
-
-    res.status(500).json({
-      error: err.message
-    });
-
-  }
+  res.json(posts);
 
 });
 
-/* ================= UPDATE BLOG ================= */
+/* ================= CREATE POST ================= */
+
+app.post("/posts", async (req, res) => {
+
+  const newPost = new Post(req.body);
+
+  await newPost.save();
+
+  res.json(newPost);
+
+});
+
+/* ================= UPDATE POST ================= */
 
 app.put("/posts/:id", async (req, res) => {
 
-  try {
+  const updatedPost = await Post.findByIdAndUpdate(
 
-    const updatedPost = await Post.findByIdAndUpdate(
-      req.params.id,
-      {
-        title: req.body.title,
-        content: req.body.content
-      },
-      {
-        new: true
-      }
-    );
+    req.params.id,
 
-    res.json(updatedPost);
+    req.body,
 
-  } catch (err) {
+    { new: true }
 
-    res.status(500).json({
-      error: err.message
-    });
+  );
 
-  }
+  res.json(updatedPost);
 
 });
 
-/* ================= DELETE BLOG ================= */
+/* ================= DELETE POST ================= */
 
 app.delete("/posts/:id", async (req, res) => {
 
-  try {
+  await Post.findByIdAndDelete(req.params.id);
 
-    await Post.findByIdAndDelete(req.params.id);
+  res.json({
 
-    res.json({
-      message: "Blog deleted"
-    });
+    message: "Blog deleted"
 
-  } catch (err) {
-
-    res.status(500).json({
-      error: err.message
-    });
-
-  }
+  });
 
 });
 
@@ -126,9 +90,9 @@ mongoose.connect(process.env.MONGO_URI)
 
   console.log("MongoDB Connected");
 
-  app.listen(process.env.PORT || 5000, () => {
+  app.listen(5000, () => {
 
-    console.log("Server running");
+    console.log("Server running on port 5000");
 
   });
 

@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,26 +9,31 @@
   <title>My Blog Website</title>
 
   <link rel="stylesheet" href="style.css" />
-
 </head>
 
 <body>
 
   <div class="container">
 
+    <h1>🚀 My Blog Website</h1>
+
+    <!-- SEARCH + THEME -->
+
     <div class="top-bar">
 
-      <h1>🚀 My Blog Website</h1>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 Search blogs..."
+      />
 
-      <button id="themeToggle">🌙 Theme</button>
+      <button id="themeToggle">
+        🌙 Theme
+      </button>
 
     </div>
 
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="🔍 Search blogs..."
-    />
+    <!-- BLOG FORM -->
 
     <form id="blogForm">
 
@@ -37,6 +41,13 @@
         type="text"
         id="title"
         placeholder="Enter blog title"
+        required
+      />
+
+      <input
+        type="text"
+        id="author"
+        placeholder="Enter author name"
         required
       />
 
@@ -52,9 +63,21 @@
 
     </form>
 
-    <h2 class="published-heading">
-      📚 Published Blogs
-    </h2>
+    <!-- SORT BUTTONS -->
+
+    <div class="sort-buttons">
+
+      <button id="newestBtn">
+        Newest
+      </button>
+
+      <button id="oldestBtn">
+        Oldest
+      </button>
+
+    </div>
+
+    <!-- BLOGS -->
 
     <div id="blogsContainer"></div>
 
@@ -63,5 +86,4 @@
   <script src="script.js"></script>
 
 </body>
-
 </html>
