@@ -3,9 +3,12 @@ const API_URL = "https://syntecxhub-blog-api-2.onrender.com/posts";
 const blogForm = document.getElementById("blogForm");
 const blogsContainer = document.getElementById("blogs");
 const searchInput = document.getElementById("search");
+const sortSelect = document.getElementById("sort");
 
 let blogs = [];
 let editId = null;
+let currentPage = 1;
+const blogsPerPage = 3;
 
 
 // FETCH BLOGS
@@ -13,37 +16,53 @@ async function fetchBlogs() {
 
 blogsContainer.innerHTML = "<h2>Loading blogs...</h2>";
 
+try {
+
 const res = await fetch(API_URL);
 
 blogs = await res.json();
 
-displayBlogs(blogs);
+displayBlogs();
+
+}
+
+catch (error) {
+
+blogsContainer.innerHTML =
+"<h2>Failed to load blogs ❌</h2>";
+
+}
 
 }
 
 
 // DISPLAY BLOGS
-function displayBlogs(data) {
+function displayBlogs(filteredBlogs = blogs) {
 
 blogsContainer.innerHTML = "";
 
-if (data.length === 0) {
+if (filteredBlogs.length === 0) {
 
-blogsContainer.innerHTML = `
-<h2>No Blogs Found ❌</h2>
-`;
+blogsContainer.innerHTML =
+"<h2>No Blogs Found ❌</h2>";
 
 return;
 
 }
 
-data.forEach((blog) => {
+const start = (currentPage - 1) * blogsPerPage;
 
-const div = document.createElement("div");
+const end = start + blogsPerPage;
 
-div.className = "blog-card";
+const paginatedBlogs = filteredBlogs.slice(start, end);
 
-div.innerHTML = `
+paginatedBlogs.forEach((blog) => {
+
+const blogCard = document.createElement("div");
+
+blogCard.classList.add("blog-card");
+
+blogCard.innerHTML = `
 
 ${blog.image ? `
 <img src="https://syntecxhub-blog-api-2.onrender.com/uploads/${blog.image}"
@@ -60,7 +79,7 @@ class="blog-image">
 📅 ${new Date(blog.createdAt).toLocaleString()}
 </p>
 
-<div class="btns">
+<div class="btn-group">
 
 <button onclick="editBlog('${blog._id}')">
 ✏️ Edit
@@ -71,9 +90,10 @@ class="blog-image">
 </button>
 
 </div>
+
 `;
 
-blogsContainer.appendChild(div);
+blogsContainer.appendChild(blogCard);
 
 });
 
@@ -101,6 +121,8 @@ return;
 
 }
 
+
+// UPDATE BLOG
 if (editId) {
 
 await fetch(`${API_URL}/${editId}`, {
@@ -112,9 +134,11 @@ headers: {
 },
 
 body: JSON.stringify({
+
 title,
 author,
 content,
+
 }),
 
 });
@@ -126,6 +150,8 @@ document.getElementById("publishBtn").innerText =
 
 }
 
+
+// CREATE BLOG
 else {
 
 const formData = new FormData();
@@ -137,7 +163,9 @@ formData.append("author", author);
 formData.append("content", content);
 
 if (image) {
+
 formData.append("image", image);
+
 }
 
 await fetch(API_URL, {
@@ -151,6 +179,9 @@ body: formData,
 }
 
 blogForm.reset();
+
+document.getElementById("publishBtn").innerText =
+"Publish Blog";
 
 fetchBlogs();
 
@@ -193,12 +224,19 @@ blog.content;
 
 editId = id;
 
-document.getElementById("publishBtn").innerText =
-"Update Blog";
 
+// CHANGE BUTTON TEXT
+document.getElementById("publishBtn").innerText =
+"Update Blog ✏️";
+
+
+// SCROLL TO TOP
 window.scrollTo({
+
 top: 0,
-behavior: "smooth"
+
+behavior: "smooth",
+
 });
 
 }
@@ -207,15 +245,44 @@ behavior: "smooth"
 // SEARCH BLOG
 searchInput.addEventListener("input", () => {
 
-const value = searchInput.value.toLowerCase();
+const searchValue =
+searchInput.value.toLowerCase();
 
-const filtered = blogs.filter((blog) =>
+const filteredBlogs = blogs.filter((blog) =>
 
-blog.title.toLowerCase().includes(value)
+blog.title.toLowerCase().includes(searchValue)
 
 );
 
-displayBlogs(filtered);
+displayBlogs(filteredBlogs);
+
+});
+
+
+// SORT BLOGS
+sortSelect.addEventListener("change", () => {
+
+if (sortSelect.value === "newest") {
+
+blogs.sort(
+(a, b) =>
+new Date(b.createdAt) -
+new Date(a.createdAt)
+);
+
+}
+
+else {
+
+blogs.sort(
+(a, b) =>
+new Date(a.createdAt) -
+new Date(b.createdAt)
+);
+
+}
+
+displayBlogs();
 
 });
 
@@ -223,7 +290,33 @@ displayBlogs(filtered);
 // THEME TOGGLE
 function toggleTheme() {
 
-document.body.classList.toggle("light");
+document.body.classList.toggle("light-mode");
+
+}
+
+
+// PAGINATION
+function nextPage() {
+
+if (currentPage * blogsPerPage < blogs.length) {
+
+currentPage++;
+
+displayBlogs();
+
+}
+
+}
+
+function prevPage() {
+
+if (currentPage > 1) {
+
+currentPage--;
+
+displayBlogs();
+
+}
 
 }
 
