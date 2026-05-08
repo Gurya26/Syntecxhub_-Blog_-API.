@@ -3,10 +3,12 @@ const API_URL = "https://syntecxhub-blog-api-2.onrender.com/posts";
 const blogForm = document.getElementById("blogForm");
 const blogsContainer = document.getElementById("blogs");
 const searchInput = document.getElementById("search");
-const sortSelect = document.getElementById("sort");
+const sortSelect = document.getElementById("sortSelect");
 
 let blogs = [];
+let filteredBlogs = [];
 let editId = null;
+
 let currentPage = 1;
 const blogsPerPage = 3;
 
@@ -21,6 +23,8 @@ try {
 const res = await fetch(API_URL);
 
 blogs = await res.json();
+
+filteredBlogs = blogs;
 
 displayBlogs();
 
@@ -37,7 +41,7 @@ blogsContainer.innerHTML =
 
 
 // DISPLAY BLOGS
-function displayBlogs(filteredBlogs = blogs) {
+function displayBlogs() {
 
 blogsContainer.innerHTML = "";
 
@@ -50,19 +54,22 @@ return;
 
 }
 
-const start = (currentPage - 1) * blogsPerPage;
+const start =
+(currentPage - 1) * blogsPerPage;
 
-const end = start + blogsPerPage;
+const end =
+start + blogsPerPage;
 
-const paginatedBlogs = filteredBlogs.slice(start, end);
+const paginatedBlogs =
+filteredBlogs.slice(start, end);
 
 paginatedBlogs.forEach((blog) => {
 
-const blogCard = document.createElement("div");
+const div = document.createElement("div");
 
-blogCard.classList.add("blog-card");
+div.className = "blog-card";
 
-blogCard.innerHTML = `
+div.innerHTML = `
 
 ${blog.image ? `
 <img src="https://syntecxhub-blog-api-2.onrender.com/uploads/${blog.image}"
@@ -79,7 +86,7 @@ class="blog-image">
 📅 ${new Date(blog.createdAt).toLocaleString()}
 </p>
 
-<div class="btn-group">
+<div class="btns">
 
 <button onclick="editBlog('${blog._id}')">
 ✏️ Edit
@@ -93,7 +100,7 @@ class="blog-image">
 
 `;
 
-blogsContainer.appendChild(blogCard);
+blogsContainer.appendChild(div);
 
 });
 
@@ -105,21 +112,17 @@ blogForm.addEventListener("submit", async (e) => {
 
 e.preventDefault();
 
-const title = document.getElementById("title").value;
+const title =
+document.getElementById("title").value;
 
-const author = document.getElementById("author").value;
+const author =
+document.getElementById("author").value;
 
-const content = document.getElementById("content").value;
+const content =
+document.getElementById("content").value;
 
-const image = document.getElementById("image").files[0];
-
-if (!title || !author || !content) {
-
-alert("Please fill all fields");
-
-return;
-
-}
+const image =
+document.getElementById("image").files[0];
 
 
 // UPDATE BLOG
@@ -134,11 +137,9 @@ headers: {
 },
 
 body: JSON.stringify({
-
 title,
 author,
 content,
-
 }),
 
 });
@@ -180,9 +181,6 @@ body: formData,
 
 blogForm.reset();
 
-document.getElementById("publishBtn").innerText =
-"Publish Blog";
-
 fetchBlogs();
 
 });
@@ -191,9 +189,8 @@ fetchBlogs();
 // DELETE BLOG
 async function deleteBlog(id) {
 
-const confirmDelete = confirm(
-"Delete this blog?"
-);
+const confirmDelete =
+confirm("Delete this blog?");
 
 if (!confirmDelete) return;
 
@@ -211,7 +208,8 @@ fetchBlogs();
 // EDIT BLOG
 function editBlog(id) {
 
-const blog = blogs.find((b) => b._id === id);
+const blog =
+blogs.find((b) => b._id === id);
 
 document.getElementById("title").value =
 blog.title;
@@ -224,13 +222,9 @@ blog.content;
 
 editId = id;
 
-
-// CHANGE BUTTON TEXT
 document.getElementById("publishBtn").innerText =
 "Update Blog ✏️";
 
-
-// SCROLL TO TOP
 window.scrollTo({
 
 top: 0,
@@ -245,16 +239,18 @@ behavior: "smooth",
 // SEARCH BLOG
 searchInput.addEventListener("input", () => {
 
-const searchValue =
+const value =
 searchInput.value.toLowerCase();
 
-const filteredBlogs = blogs.filter((blog) =>
+filteredBlogs = blogs.filter((blog) =>
 
-blog.title.toLowerCase().includes(searchValue)
+blog.title.toLowerCase().includes(value)
 
 );
 
-displayBlogs(filteredBlogs);
+currentPage = 1;
+
+displayBlogs();
 
 });
 
@@ -264,20 +260,22 @@ sortSelect.addEventListener("change", () => {
 
 if (sortSelect.value === "newest") {
 
-blogs.sort(
-(a, b) =>
+filteredBlogs.sort((a, b) =>
+
 new Date(b.createdAt) -
 new Date(a.createdAt)
+
 );
 
 }
 
 else {
 
-blogs.sort(
-(a, b) =>
+filteredBlogs.sort((a, b) =>
+
 new Date(a.createdAt) -
 new Date(b.createdAt)
+
 );
 
 }
@@ -296,9 +294,13 @@ document.body.classList.toggle("light-mode");
 
 
 // PAGINATION
-function nextPage() {
+document.getElementById("nextBtn")
+.addEventListener("click", () => {
 
-if (currentPage * blogsPerPage < blogs.length) {
+if (
+currentPage * blogsPerPage <
+filteredBlogs.length
+) {
 
 currentPage++;
 
@@ -306,9 +308,11 @@ displayBlogs();
 
 }
 
-}
+});
 
-function prevPage() {
+
+document.getElementById("prevBtn")
+.addEventListener("click", () => {
 
 if (currentPage > 1) {
 
@@ -318,7 +322,7 @@ displayBlogs();
 
 }
 
-}
+});
 
 
 // INITIAL LOAD
